@@ -1,94 +1,78 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": None,
-   "id": "7fa7f016-f28d-42f5-8995-d2163e1d57f0",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "from deep_translator import GoogleTranslator\n",
-    "import pandas as pd\n",
-    "from datetime import datetime, timedelta\n",
-    "\n",
-    "# Input discharge note\n",
-    "note = \"Patient discharged after appendectomy. Prescribed Amoxicillin 500mg twice daily. Avoid strenuous activity. Follow-up in 7 days.\"\n",
-    "\n",
-    "# Simplify\n",
-    "simplified = \"\"\"\n",
-    "You had surgery to remove your appendix.\n",
-    "Take Amoxicillin 500mg two times every day.\n",
-    "Do not lift heavy things or do hard exercise.\n",
-    "Come back to the hospital in 7 days for a check-up.\n",
-    "\"\"\"\n",
-    "\n",
-    "# Translate to Tamil\n",
-    "translated = GoogleTranslator(source='auto', target='ta').translate(simplified)\n",
-    "\n",
-    "# Planner\n",
-    "start_date = datetime.today()\n",
-    "tasks = [\n",
-    "    {\"task\": \"Take Amoxicillin 500mg\", \"time\": \"08:00 AM\"},\n",
-    "    {\"task\": \"Take Amoxicillin 500mg\", \"time\": \"08:00 PM\"},\n",
-    "    {\"task\": \"Avoid heavy lifting\", \"time\": \"All Day\"},\n",
-    "    {\"task\": \"Check wound for redness/swelling\", \"time\": \"06:00 PM\"},\n",
-    "]\n",
-    "plan = []\n",
-    "for i in range(7):\n",
-    "    date = start_date + timedelta(days=i)\n",
-    "    for t in tasks:\n",
-    "        plan.append({\"Date\": date.strftime(\"%Y-%m-%d\"), \"Time\": t[\"time\"], \"Task\": t[\"task\"]})\n",
-    "df = pd.DataFrame(plan)\n",
-    "\n",
-    "# Danger Alerts\n",
-    "user_symptom = \"I have a fever and the wound is red.\"\n",
-    "danger_signs = {\n",
-    "    \"fever\": \"You may have an infection. Please contact your doctor or visit the emergency room.\",\n",
-    "    \"bleeding\": \"This could be serious. Apply pressure and seek medical help immediately.\",\n",
-    "    \"redness\": \"Watch for spreading redness or swelling. Contact your clinic if it worsens.\",\n",
-    "    \"pain\": \"If pain increases or becomes severe, consult your doctor.\",\n",
-    "    \"swelling\": \"Swelling may indicate infection. Monitor closely and call your doctor if it grows.\"\n",
-    "}\n",
-    "alerts = []\n",
-    "for keyword, message in danger_signs.items():\n",
-    "    if keyword in user_symptom.lower():\n",
-    "        alerts.append(f\"⚠️ {message}\")\n",
-    "\n",
-    "# Output in Jupyter Notebook\n",
-    "print(\"📝 Simplified Summary:\\n\", simplified)\n",
-    "print(\"\\n🌐 Tamil Translation:\\n\", translated)\n",
-    "print(\"\\n📅 7-Day Action Plan:\")\n",
-    "print(df.head(14))\n",
-    "\n",
-    "if alerts:\n",
-    "    print(\"\\n🚨 Danger Alerts:\")\n",
-    "    for alert in alerts:\n",
-    "        print(alert)\n",
-    "    print(\"\\nDisclaimer: This is not medical advice. Please consult a healthcare professional.\")\n",
-    "else:\n",
-    "    print(\"\\n✅ No danger signs detected.\")\n"
-   ]
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "Python [conda env:base] *",
-   "language": "python",
-   "name": "conda-base-py"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.13.9"
-  }
- },
- "nbformat": 4,
- "nbformat_minor": 5
+import streamlit as st
+from deep_translator import GoogleTranslator
+import pandas as pd
+from datetime import datetime, timedelta
+# Uncomment pyttsx3 if running locally (voice playback won't work on Streamlit Cloud)
+# import pyttsx3
+
+# Title and description
+st.title("📄 Discharge AI Tool")
+st.write("Simplifies discharge instructions, translates to Tamil, creates a 7-day plan, and alerts danger signs.")
+
+# Input box for discharge note
+note = st.text_area("Enter discharge note:", 
+    "Patient discharged after appendectomy. Prescribed Amoxicillin 500mg twice daily. Avoid strenuous activity. Follow-up in 7 days.")
+
+# Simplified version (static for now)
+simplified = """
+You had surgery to remove your appendix.
+Take Amoxicillin 500mg two times a day for 7 days.
+Do not lift heavy things or do strenuous activities.
+Come back to the hospital in 7 days for a follow-up.
+"""
+
+# Display simplified summary
+st.subheader("🧾 Simplified Summary")
+st.write(simplified)
+
+# Translate to Tamil
+translated = GoogleTranslator(source='auto', target='ta').translate(simplified)
+st.subheader("🌐 Tamil Translation")
+st.write(translated)
+
+# Voice playback (works locally, not on Streamlit Cloud)
+# if st.button("🔊 Hear Instructions"):
+#     engine = pyttsx3.init()
+#     engine.say(simplified)
+#     engine.runAndWait()
+#     st.success("Voice playback complete!")
+
+# 7-day planner
+start_date = datetime.today()
+tasks = [
+    {"task": "Take Amoxicillin 500mg", "time": "08:00 AM"},
+    {"task": "Take Amoxicillin 500mg", "time": "08:00 PM"},
+    {"task": "Avoid heavy lifting", "time": "All Day"},
+    {"task": "Check wound for redness/swelling", "time": "06:00 PM"},
+]
+plan = []
+for i in range(7):
+    date = start_date + timedelta(days=i)
+    for t in tasks:
+        plan.append({"Date": date.strftime("%Y-%m-%d"), "Time": t["time"], "Task": t["task"]})
+df = pd.DataFrame(plan)
+
+st.subheader("📅 7-Day Action Plan")
+st.table(df)
+
+# Danger alerts
+user_symptom = st.text_input("Enter your symptom (e.g., fever, bleeding, redness):")
+danger_signs = {
+    "fever": "You may have an infection. Please contact your doctor or visit the emergency room.",
+    "bleeding": "This could be serious. Apply pressure and seek medical help immediately.",
+    "redness": "Watch for spreading redness or swelling. Contact your clinic if it worsens.",
+    "pain": "If pain increases or becomes severe, consult your doctor.",
+    "swelling": "Swelling may indicate infection. Monitor closely and call your doctor if it grows."
 }
+alerts = []
+for keyword, message in danger_signs.items():
+    if keyword in user_symptom.lower():
+        alerts.append(f"⚠️ {message}")
+
+if alerts:
+    st.subheader("🚨 Danger Alerts")
+    for alert in alerts:
+        st.error(alert)
+    st.caption("Disclaimer: This is not medical advice. Please consult a healthcare professional.")
+elif user_symptom:
+    st.success("✅ No danger signs detected.")
